@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rakna - التسجيل</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #f0f9ff 0%, #faf5ff 100%);
+            padding: var(--spacing-xl);
+        }
+        .auth-card {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-2xl);
+            box-shadow: var(--shadow-xl);
+            max-width: 600px;
+            width: 100%;
+        }
+        .auth-header {
+            text-align: center;
+            margin-bottom: var(--spacing-2xl);
+        }
+        .auth-logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto var(--spacing-lg);
+            border-radius: var(--radius-full);
+            background: var(--primary-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: var(--white);
+        }
+        .auth-title {
+            font-size: var(--font-size-3xl);
+            font-weight: 800;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: var(--spacing-sm);
+        }
+        .auth-subtitle {
+            color: var(--gray-600);
+            font-size: var(--font-size-base);
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-md);
+        }
+        .form-actions {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-xl);
+        }
+        .form-actions .btn {
+            flex: 1;
+        }
+        .auth-footer {
+            text-align: center;
+            margin-top: var(--spacing-xl);
+            padding-top: var(--spacing-xl);
+            border-top: 1px solid var(--gray-200);
+        }
+        .auth-footer a {
+            color: var(--primary-blue);
+            font-weight: 600;
+        }
+        .input-group {
+            position: relative;
+        }
+        .input-icon {
+            position: absolute;
+            right: var(--spacing-md);
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray-400);
+        }
+        .form-group input {
+            padding-right: 45px;
+        }
+        .password-toggle {
+            position: absolute;
+            left: var(--spacing-md);
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--gray-400);
+            cursor: pointer;
+            font-size: var(--font-size-lg);
+        }
+        .password-toggle:hover {
+            color: var(--primary-blue);
+        }
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="auth-logo">
+                    <i class="fas fa-car"></i>
+                </div>
+                <h1 class="auth-title" data-translate="register.title">إنشاء حساب جديد</h1>
+                <p class="auth-subtitle" data-translate="register.subtitle">سجل الآن للاستفادة من خدمات Rakna</p>
+            </div>
+
+            <form id="registerForm">
+                <div class="form-group">
+                    <label data-translate="register.name">الاسم الكامل *</label>
+                    <div class="input-group">
+                        <i class="fas fa-user input-icon"></i>
+                        <input type="text" id="fullName" required placeholder="أدخل اسمك الكامل" data-translate-placeholder="register.name.placeholder">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label data-translate="register.email">البريد الإلكتروني *</label>
+                    <div class="input-group">
+                        <i class="fas fa-envelope input-icon"></i>
+                        <input type="email" id="email" required placeholder="example@email.com" data-translate-placeholder="register.email.placeholder">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label data-translate="register.role">نوع الحساب *</label>
+                    <div class="input-group">
+                        <i class="fas fa-user-tag input-icon"></i>
+                        <select id="userRole" required>
+                            <option value="" data-translate="register.role.select">اختر نوع الحساب</option>
+                            <option value="driver" data-translate="register.role.driver">سائق</option>
+                            <option value="owner" data-translate="register.role.owner">صاحب موقف</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label data-translate="register.phone">رقم الهاتف *</label>
+                        <div class="input-group">
+                            <i class="fas fa-phone input-icon"></i>
+                            <input type="tel" id="phone" required placeholder="01X XXX XXXX" data-translate-placeholder="register.phone.placeholder">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label data-translate="register.nationalId">الرقم القومي *</label>
+                        <div class="input-group">
+                            <i class="fas fa-id-card input-icon"></i>
+                            <input type="text" id="nationalId" required placeholder="14 رقم" data-translate-placeholder="register.nationalId.placeholder" maxlength="14" pattern="[0-9]{14}">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Driver-specific fields (only shown for drivers) -->
+                <div id="driverFields" style="display: none;">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label data-translate="register.drivingLicense">رخصة القيادة *</label>
+                            <div class="input-group">
+                                <i class="fas fa-id-badge input-icon"></i>
+                                <input type="text" id="drivingLicense" placeholder="رقم رخصة القيادة" data-translate-placeholder="register.drivingLicense.placeholder">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label data-translate="register.carLicense">رقم لوحة السيارة *</label>
+                            <div class="input-group">
+                                <i class="fas fa-car input-icon"></i>
+                                <input type="text" id="carLicense" placeholder="XXX-XXXX" data-translate-placeholder="register.carLicense.placeholder">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label data-translate="register.carType">نوع السيارة *</label>
+                            <div class="input-group">
+                                <i class="fas fa-car-side input-icon"></i>
+                                <select id="carType" data-translate-placeholder="register.carType.placeholder">
+                                    <option value="" data-translate="register.carType.select">اختر نوع السيارة</option>
+                                    <option value="sedan" data-translate="register.carType.sedan">سيدان</option>
+                                    <option value="suv" data-translate="register.carType.suv">دفع رباعي</option>
+                                    <option value="hatchback" data-translate="register.carType.hatchback">هاتشباك</option>
+                                    <option value="coupe" data-translate="register.carType.coupe">كوبيه</option>
+                                    <option value="pickup" data-translate="register.carType.pickup">بيك أب</option>
+                                    <option value="van" data-translate="register.carType.van">فان</option>
+                                    <option value="other" data-translate="register.carType.other">أخرى</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label data-translate="register.carColor">لون السيارة *</label>
+                            <div class="input-group">
+                                <i class="fas fa-palette input-icon"></i>
+                                <select id="carColor" data-translate-placeholder="register.carColor.placeholder">
+                                    <option value="" data-translate="register.carColor.select">اختر لون السيارة</option>
+                                    <option value="white" data-translate="register.carColor.white">أبيض</option>
+                                    <option value="black" data-translate="register.carColor.black">أسود</option>
+                                    <option value="silver" data-translate="register.carColor.silver">فضي</option>
+                                    <option value="gray" data-translate="register.carColor.gray">رمادي</option>
+                                    <option value="red" data-translate="register.carColor.red">أحمر</option>
+                                    <option value="blue" data-translate="register.carColor.blue">أزرق</option>
+                                    <option value="green" data-translate="register.carColor.green">أخضر</option>
+                                    <option value="yellow" data-translate="register.carColor.yellow">أصفر</option>
+                                    <option value="brown" data-translate="register.carColor.brown">بني</option>
+                                    <option value="other" data-translate="register.carColor.other">أخرى</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Owner-specific fields (only shown for owners) -->
+                <div id="ownerFields" class="form-group" style="display: none;">
+                    <label data-translate="register.ownerGarage">الجراج الذي تملكه *</label>
+                    <div class="input-group">
+                        <i class="fas fa-parking input-icon"></i>
+                        <select id="ownerGarage" data-translate-placeholder="register.ownerGarage.placeholder">
+                            <option value="" data-translate="register.ownerGarage.select">اختر الجراج</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label data-translate="register.password">كلمة المرور *</label>
+                    <div class="input-group">
+                        <i class="fas fa-lock input-icon"></i>
+                        <input type="password" id="password" required placeholder="كلمة مرور قوية" data-translate-placeholder="register.password.placeholder" minlength="8">
+                        <button type="button" class="password-toggle" onclick="togglePassword('password')">
+                            <i class="fas fa-eye" id="passwordToggle"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label data-translate="register.confirmPassword">تأكيد كلمة المرور *</label>
+                    <div class="input-group">
+                        <i class="fas fa-lock input-icon"></i>
+                        <input type="password" id="confirmPassword" required placeholder="أعد إدخال كلمة المرور" data-translate-placeholder="register.confirmPassword.placeholder">
+                        <button type="button" class="password-toggle" onclick="togglePassword('confirmPassword')">
+                            <i class="fas fa-eye" id="confirmPasswordToggle"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="agreeTerms" required>
+                        <span data-translate="register.agreeTerms">أوافق على <a href="#" data-translate="register.terms">الشروط والأحكام</a> و <a href="#" data-translate="register.privacy">سياسة الخصوصية</a></span>
+                    </label>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary btn-large" data-translate="register.submit">إنشاء حساب</button>
+                </div>
+            </form>
+
+            <div class="auth-footer">
+                <p data-translate="register.haveAccount">لديك حساب بالفعل؟ <a href="login.html" data-translate="register.login">تسجيل الدخول</a></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification-container"></div>
+    <script src="js/adminConfig.js"></script>
+    <script src="js/language.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/register.js"></script>
+</body>
+</html>
+

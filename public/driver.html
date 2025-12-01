@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rakna - ابحث عن موقف</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        .map-legend {
+            position: absolute;
+            bottom: var(--spacing-md);
+            left: var(--spacing-md);
+            background: var(--white);
+            padding: var(--spacing-md);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            z-index: 1000;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-xs);
+            font-size: var(--font-size-sm);
+        }
+        .legend-item:last-child {
+            margin-bottom: 0;
+        }
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+        }
+        .legend-color.available { background: #10b981; }
+        .legend-color.limited { background: #f59e0b; }
+        .legend-color.full { background: #ef4444; }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-md);
+        }
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+        .btn-secondary {
+            background: var(--secondary-color);
+            color: var(--white);
+            border: none;
+            padding: var(--spacing-md) var(--spacing-lg);
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-sm);
+        }
+        .btn-secondary:hover {
+            background: #6d28d9;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        .btn-secondary i {
+            font-size: var(--font-size-lg);
+        }
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.1);
+                opacity: 0.8;
+            }
+        }
+        .garage-marker {
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        .garage-marker:hover {
+            transform: scale(1.15);
+            z-index: 1000;
+        }
+        .garage-marker.closest {
+            z-index: 1000 !important;
+            animation: pulse 2s infinite;
+        }
+        .leaflet-popup-content-wrapper {
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .leaflet-popup-content {
+            margin: 0;
+            padding: 0;
+        }
+        .traffic-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--border-radius);
+            font-size: var(--font-size-xs);
+            font-weight: 600;
+            margin-top: var(--spacing-xs);
+        }
+        .traffic-indicator.light {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .traffic-indicator.moderate {
+            background: #fed7aa;
+            color: #9a3412;
+        }
+        .traffic-indicator.heavy {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        .traffic-indicator.very-heavy {
+            background: #fee2e2;
+            color: #7f1d1d;
+        }
+        .alt-route-marker {
+            cursor: pointer;
+        }
+        .district-label {
+            pointer-events: none;
+            z-index: 1000;
+        }
+        .district-label div {
+            text-align: center;
+            line-height: 1.4;
+        }
+        .map-section {
+            position: relative;
+            width: 100%;
+            height: 600px;
+            margin: var(--spacing-xl) 0;
+        }
+        .map-container {
+            width: 100%;
+            height: 100%;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+        }
+        .map-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+        #map {
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-car"></i>
+                <span>Rakna</span>
+            </div>
+            <div class="nav-menu">
+                <div class="language-switcher"></div>
+                <a href="visitor.html" class="btn btn-outline" data-translate="nav.home">الرئيسية</a>
+                <a href="owner.html" class="btn btn-outline" data-translate="nav.owners">لأصحاب المواقف</a>
+                <a href="admin.html" class="btn btn-outline" data-translate="nav.admin">للإدارة</a>
+                <button class="btn btn-primary" id="profileBtn" style="display: none;">
+                    <i class="fas fa-user"></i>
+                    <span data-translate="nav.profile">الملف الشخصي</span>
+                </button>
+                <a href="login.html" class="btn btn-outline" id="loginBtn" style="display: none;" data-translate="nav.login">تسجيل الدخول</a>
+                <a href="register.html" class="btn btn-primary" id="registerBtn" style="display: none;" data-translate="nav.register">إنشاء حساب</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <div class="hero-content">
+                <h1 class="hero-title" data-translate="driver.title">ابحث عن موقف في العطارين</h1>
+                <p class="hero-subtitle" data-translate="driver.subtitle">مواقف ذكية متاحة في الوقت الفعلي</p>
+                
+                <div class="search-container">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="locationSearch" placeholder="أدخل موقعك أو المنطقة" data-translate-placeholder="driver.search.placeholder">
+                        <button class="btn btn-primary" id="searchBtn" data-translate="driver.search.button">بحث</button>
+                    </div>
+                    <button class="btn btn-secondary" id="findClosestBtn" style="margin-top: var(--spacing-md); width: 100%;">
+                        <i class="fas fa-location-arrow"></i>
+                        <span data-translate="driver.findClosest">أقرب موقف لي</span>
+                    </button>
+                    <div id="locationStatus" style="margin-top: var(--spacing-sm); font-size: var(--font-size-xs); color: var(--gray-600); text-align: center; display: none;">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span data-translate="driver.location.status">جاري تحديد موقعك...</span>
+                    </div>
+                    <div class="search-filters">
+                        <select id="priceFilter">
+                            <option value="" data-translate="driver.filters.price">أي سعر</option>
+                            <option value="0-10" data-translate="driver.filters.price.0-10">0-10 جنيه/ساعة</option>
+                            <option value="10-20" data-translate="driver.filters.price.10-20">10-20 جنيه/ساعة</option>
+                            <option value="20+" data-translate="driver.filters.price.20+">20+ جنيه/ساعة</option>
+                        </select>
+                        <select id="typeFilter">
+                            <option value="" data-translate="driver.filters.type">أي نوع</option>
+                            <option value="regular" data-translate="driver.filters.type.regular">عادي</option>
+                            <option value="handicap" data-translate="driver.filters.type.handicap">ذوي الاحتياجات</option>
+                            <option value="electric" data-translate="driver.filters.type.electric">سيارة كهربائية</option>
+                        </select>
+                        <button class="btn btn-outline filter-btn" id="filterBtn">
+                            <i class="fas fa-filter"></i>
+                            <span data-translate="driver.filters.button">فلترة</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Map Section -->
+        <section class="map-section">
+            <div class="map-container">
+                <div class="map-wrapper">
+                    <div id="map" class="map"></div>
+                    <div class="map-controls">
+                        <button class="map-control-btn" id="centerMapBtn" title="توسيط الخريطة">
+                            <i class="fas fa-crosshairs"></i>
+                        </button>
+                        <button class="map-control-btn" id="refreshMapBtn" title="تحديث الخريطة">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                        <button class="map-control-btn" id="toggleMapLayerBtn" title="تبديل نوع الخريطة">
+                            <i class="fas fa-layer-group"></i>
+                        </button>
+                        <button class="map-control-btn" id="showRouteSelectionBtn" title="اختر طريقك">
+                            <i class="fas fa-route"></i>
+                        </button>
+                        <button class="map-control-btn" id="editModeBtn" title="وضع التعديل - إضافة جراجات">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    </div>
+                    <div class="map-legend">
+                        <div class="legend-item">
+                            <div class="legend-color available"></div>
+                            <span data-translate="driver.legend.available">متاح</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color limited"></div>
+                            <span data-translate="driver.legend.limited">محدود</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color full"></div>
+                            <span data-translate="driver.legend.full">ممتلئ</span>
+                        </div>
+                    </div>
+                    <!-- Route Selection -->
+                    <div class="route-selection" id="routeSelection" style="position: absolute; top: var(--spacing-md); right: var(--spacing-md); background: var(--white); padding: var(--spacing-md); border-radius: var(--radius-md); box-shadow: var(--shadow-lg); z-index: 1000; display: none;">
+                        <h4 style="margin: 0 0 var(--spacing-md) 0; font-size: var(--font-size-md); font-weight: 600;" data-translate="driver.route.title">اختر طريقك</h4>
+                        <div style="display: flex; flex-direction: column; gap: var(--spacing-sm);">
+                            <button class="route-btn" data-route="direct" style="padding: var(--spacing-sm) var(--spacing-md); border: 1px solid var(--gray-300); border-radius: var(--border-radius); background: var(--white); cursor: pointer; transition: var(--transition); text-align: right;">
+                                <i class="fas fa-route" style="margin-left: var(--spacing-xs);"></i>
+                                <span data-translate="driver.route.direct">مباشر (أقصر طريق)</span>
+                            </button>
+                            <button class="route-btn" data-route="corniche" style="padding: var(--spacing-sm) var(--spacing-md); border: 1px solid var(--gray-300); border-radius: var(--border-radius); background: var(--white); cursor: pointer; transition: var(--transition); text-align: right;">
+                                <i class="fas fa-route" style="margin-left: var(--spacing-xs); color: #3b82f6;"></i>
+                                <span data-translate="driver.route.corniche">الكورنيش</span>
+                            </button>
+                            <button class="route-btn" data-route="tram" style="padding: var(--spacing-sm) var(--spacing-md); border: 1px solid var(--gray-300); border-radius: var(--border-radius); background: var(--white); cursor: pointer; transition: var(--transition); text-align: right;">
+                                <i class="fas fa-route" style="margin-left: var(--spacing-xs); color: #8b5cf6;"></i>
+                                <span data-translate="driver.route.tram">الترام</span>
+                            </button>
+                            <button class="route-btn" data-route="abuQir" style="padding: var(--spacing-sm) var(--spacing-md); border: 1px solid var(--gray-300); border-radius: var(--border-radius); background: var(--white); cursor: pointer; transition: var(--transition); text-align: right;">
+                                <i class="fas fa-route" style="margin-left: var(--spacing-xs); color: #ec4899;"></i>
+                                <span data-translate="driver.route.abuQir">أبو قير</span>
+                            </button>
+                            <button class="route-btn" data-route="mahmoudiya" style="padding: var(--spacing-sm) var(--spacing-md); border: 1px solid var(--gray-300); border-radius: var(--border-radius); background: var(--white); cursor: pointer; transition: var(--transition); text-align: right;">
+                                <i class="fas fa-route" style="margin-left: var(--spacing-xs); color: #10b981;"></i>
+                                <span data-translate="driver.route.mahmoudiya">المحمودية</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Garages Section -->
+        <section class="section">
+            <div class="container">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-xl);">
+                    <h2 class="section-title" style="margin: 0;" data-translate="driver.garages.title">المواقف المتاحة</h2>
+                    <div style="display: flex; gap: var(--spacing-md);">
+                        <button class="btn btn-outline" id="gridViewBtn">
+                            <i class="fas fa-th"></i>
+                            <span data-translate="driver.garages.view.grid">عرض الشبكة</span>
+                        </button>
+                        <button class="btn btn-outline" id="listViewBtn">
+                            <i class="fas fa-list"></i>
+                            <span data-translate="driver.garages.view.list">عرض القائمة</span>
+                        </button>
+                    </div>
+                </div>
+                <div id="garageGrid" class="garage-grid"></div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Booking Modal -->
+    <div class="modal-overlay" id="bookingModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" data-translate="driver.booking.title">حجز موقف</h3>
+                <button class="modal-close" id="closeBookingModal">&times;</button>
+            </div>
+            <form id="bookingForm">
+                <div class="form-group">
+                    <label data-translate="driver.booking.garage">الموقف</label>
+                    <input type="text" id="bookingGarageName" readonly>
+                </div>
+                <div class="form-group">
+                    <label data-translate="driver.booking.space">رقم المكان</label>
+                    <select id="bookingSpace" required></select>
+                </div>
+                <div class="form-group">
+                    <label data-translate="driver.booking.starttime">وقت البداية</label>
+                    <input type="datetime-local" id="bookingStartTime" required>
+                </div>
+                <div class="form-group">
+                    <label data-translate="driver.booking.duration">المدة (ساعات)</label>
+                    <input type="number" id="bookingDuration" min="1" max="24" value="2" required onchange="updateBookingCostInDriver()">
+                </div>
+                
+                <!-- Price Type Selection -->
+                <div class="form-group">
+                    <label data-translate="driver.booking.priceType">نوع السعر</label>
+                    <select id="bookingPriceType" onchange="updateBookingCostInDriver()" required>
+                        <option value="hourly" data-translate="driver.booking.priceType.hourly">ساعة</option>
+                        <option value="additionalHour" data-translate="driver.booking.priceType.additionalHour">ساعة إضافية</option>
+                        <option value="overnight" data-translate="driver.booking.priceType.overnight">ليلة</option>
+                        <option value="monthly" data-translate="driver.booking.priceType.monthly">شهري</option>
+                        <option value="waitingDailyMonthly" data-translate="driver.booking.priceType.waitingDailyMonthly">انتظار يومي (شهري)</option>
+                    </select>
+                </div>
+                
+                <!-- Route Selection -->
+                <div class="form-group">
+                    <label data-translate="driver.booking.route">اختر الطريق</label>
+                    <select id="bookingRoute" required>
+                        <option value="direct" data-translate="driver.booking.route.direct">مباشر (أقصر طريق)</option>
+                        <option value="corniche" data-translate="driver.booking.route.corniche">الكورنيش</option>
+                        <option value="tram" data-translate="driver.booking.route.tram">الترام</option>
+                        <option value="abuQir" data-translate="driver.booking.route.abuQir">أبو قير</option>
+                        <option value="mahmoudiya" data-translate="driver.booking.route.mahmoudiya">المحمودية</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label data-translate="driver.booking.cost">التكلفة الإجمالية</label>
+                    <input type="text" id="bookingCost" readonly style="font-size: 1.5rem; font-weight: 700; color: var(--primary-blue);">
+                </div>
+
+                <!-- Payment Section (For guests OR drivers on first booking) -->
+                <div id="paymentSection" style="margin-top: var(--spacing-xl); padding-top: var(--spacing-xl); border-top: 2px solid var(--gray-200); display: none;">
+                    <div id="paymentNotice" style="background: #fef3c7; border: 1px solid #fbbf24; border-radius: var(--border-radius); padding: var(--spacing-md); margin-bottom: var(--spacing-lg);">
+                        <p style="margin: 0; color: #92400e; font-size: var(--font-size-sm);" data-translate="driver.booking.firstTime">هذه أول حجز لك. يرجى إتمام الدفع.</p>
+                    </div>
+                    <h4 style="margin-bottom: var(--spacing-lg); font-size: var(--font-size-lg);" data-translate="driver.payment.title">معلومات الدفع</h4>
+                    
+                    <div class="form-group">
+                        <label data-translate="driver.payment.method">طريقة الدفع</label>
+                        <select id="paymentMethod" required>
+                            <option value="" data-translate="driver.payment.method.select">اختر طريقة الدفع</option>
+                            <option value="visa" data-translate="driver.payment.method.visa">فيزا</option>
+                            <option value="miza" data-translate="driver.payment.method.miza">ميزة</option>
+                            <option value="credit" data-translate="driver.payment.method.credit">بطاقة ائتمانية</option>
+                            <option value="instapay" data-translate="driver.payment.method.instapay">إنستاباي</option>
+                            <option value="wallet" data-translate="driver.payment.method.wallet">محفظة رقمية</option>
+                        </select>
+                    </div>
+
+                    <div id="cardDetails" style="display: none;">
+                        <div class="form-group">
+                            <label data-translate="driver.payment.cardNumber">رقم البطاقة</label>
+                            <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19" data-translate-placeholder="driver.payment.cardNumber.placeholder">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label data-translate="driver.payment.expiry">تاريخ الانتهاء</label>
+                                <input type="text" id="cardExpiry" placeholder="MM/YY" maxlength="5" data-translate-placeholder="driver.payment.expiry.placeholder">
+                            </div>
+                            <div class="form-group">
+                                <label data-translate="driver.payment.cvv">CVV</label>
+                                <input type="text" id="cardCVV" placeholder="123" maxlength="4" data-translate-placeholder="driver.payment.cvv.placeholder">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label data-translate="driver.payment.cardholder">اسم حامل البطاقة</label>
+                            <input type="text" id="cardholderName" placeholder="اسم حامل البطاقة" data-translate-placeholder="driver.payment.cardholder.placeholder">
+                        </div>
+                    </div>
+
+                    <div id="walletDetails" style="display: none;">
+                        <div class="form-group">
+                            <label data-translate="driver.payment.wallet">رقم المحفظة</label>
+                            <input type="text" id="walletNumber" placeholder="رقم المحفظة" data-translate-placeholder="driver.payment.wallet.placeholder">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" id="cancelBookingBtn" data-translate="driver.booking.cancel">إلغاء</button>
+                    <button type="submit" class="btn btn-primary" id="confirmBookingBtn" data-translate="driver.booking.confirm">تأكيد الحجز</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Garage Modal -->
+    <div class="modal-overlay" id="addGarageModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" data-translate="driver.addGarage.title">إضافة جراج جديد</h3>
+                <button class="modal-close" id="closeAddGarageModal">&times;</button>
+            </div>
+            <form id="addGarageForm">
+                <div class="form-group">
+                    <label data-translate="driver.addGarage.name">اسم الجراج (عربي)</label>
+                    <input type="text" id="garageNameAr" required>
+                </div>
+                <div class="form-group">
+                    <label data-translate="driver.addGarage.nameEn">اسم الجراج (إنجليزي)</label>
+                    <input type="text" id="garageNameEn" required>
+                </div>
+                <div class="form-group">
+                    <label data-translate="driver.addGarage.address">العنوان (عربي)</label>
+                    <input type="text" id="garageAddressAr" required>
+                </div>
+                <div class="form-group">
+                    <label data-translate="driver.addGarage.addressEn">العنوان (إنجليزي)</label>
+                    <input type="text" id="garageAddressEn" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label data-translate="driver.addGarage.latitude">خط العرض</label>
+                        <input type="number" id="garageLatitude" step="0.000001" required readonly>
+                    </div>
+                    <div class="form-group">
+                        <label data-translate="driver.addGarage.longitude">خط الطول</label>
+                        <input type="number" id="garageLongitude" step="0.000001" required readonly>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label data-translate="driver.addGarage.totalSpaces">عدد الأماكن</label>
+                        <input type="number" id="garageTotalSpaces" min="1" value="20" required>
+                    </div>
+                    <div class="form-group">
+                        <label data-translate="driver.addGarage.hourlyRate">السعر بالساعة (جنيه)</label>
+                        <input type="number" id="garageHourlyRate" min="0" step="0.5" value="10" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label data-translate="driver.addGarage.operatingHours">ساعات العمل</label>
+                    <input type="text" id="garageOperatingHours" value="24 hours" required>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" id="cancelAddGarageBtn" data-translate="driver.addGarage.cancel">إلغاء</button>
+                    <button type="submit" class="btn btn-primary" data-translate="driver.addGarage.submit">إضافة الجراج</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="notification-container"></div>
+    <script src="js/adminConfig.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+    <script src="js/realtime.js"></script>
+    <script src="js/language.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/driver.js"></script>
+    <script>
+        // Force render garages after all scripts are loaded
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                console.log('Window loaded, checking garages...');
+                const garageGrid = document.getElementById('garageGrid');
+                if (garageGrid) {
+                    if (typeof garages !== 'undefined' && garages && garages.length > 0) {
+                        if (typeof renderGarages === 'function') {
+                            console.log('Rendering garages on window load...');
+                            renderGarages();
+                        }
+                    } else if (typeof garagesFallback !== 'undefined' && garagesFallback && garagesFallback.length > 0) {
+                        if (typeof window !== 'undefined') {
+                            window.garages = [...garagesFallback];
+                            if (typeof renderGarages === 'function') {
+                                console.log('Rendering garages from fallback on window load...');
+                                renderGarages();
+                            }
+                        }
+                    }
+                } else {
+                    console.error('garageGrid not found on window load!');
+                }
+            }, 500);
+        });
+    </script>
+    <!-- Garage points from GARAGE.lpkx -->
+    <script>
+        // Make garage_points_for_map.json accessible
+        // The file will be loaded by driver.js
+    </script>
+    <script>
+        // Update navigation based on authentication status
+        document.addEventListener('DOMContentLoaded', () => {
+            // Wait for auth.js to load
+            setTimeout(() => {
+                const isAuthenticated = window.isAuthenticated ? window.isAuthenticated() : false;
+                const profileBtn = document.getElementById('profileBtn');
+                const loginBtn = document.getElementById('loginBtn');
+                const registerBtn = document.getElementById('registerBtn');
+                
+                if (isAuthenticated) {
+                    // Show profile button for logged in users
+                    if (profileBtn) profileBtn.style.display = 'flex';
+                    if (loginBtn) loginBtn.style.display = 'none';
+                    if (registerBtn) registerBtn.style.display = 'none';
+                    
+                    // Add profile click handler
+                    if (profileBtn) {
+                        profileBtn.addEventListener('click', () => {
+                            const user = window.getCurrentUser ? window.getCurrentUser() : null;
+                            if (user) {
+                                const isArabic = window.languageManager && window.languageManager.currentLanguage === 'ar';
+                                if (window.languageManager) {
+                                    window.languageManager.showNotification(
+                                        isArabic ? `مرحباً ${user.name || user.email}` : `Welcome ${user.name || user.email}`,
+                                        'info'
+                                    );
+                                }
+                            }
+                        });
+                    }
+                } else {
+                    // Show login/register buttons for guests
+                    if (profileBtn) profileBtn.style.display = 'none';
+                    if (loginBtn) loginBtn.style.display = 'flex';
+                    if (registerBtn) registerBtn.style.display = 'flex';
+                }
+            }, 100);
+        });
+    </script>
+</body>
+</html>
+
+

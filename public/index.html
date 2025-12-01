@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rakna - نظام ركنة ذكي</title>
+    <script src="js/adminConfig.js"></script>
+    <script src="js/auth.js"></script>
+</head>
+<body>
+    <script>
+        // Auto-login based on saved account or URL parameter
+        (function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const emailFromUrl = urlParams.get('email') || urlParams.get('admin');
+            
+            // If email in URL, try auto-login
+            if (emailFromUrl) {
+                // Check if it's an admin email
+                if (window.isAdminEmail && window.isAdminEmail(emailFromUrl)) {
+                    if (window.autoLoginAdmin) {
+                        window.autoLoginAdmin(emailFromUrl);
+                    }
+                    window.location.href = 'admin.html';
+                    return;
+                }
+                
+                // Try to auto-login by email (will be handled by auth.js)
+                // For now, redirect to login with auto-login attempt
+                window.location.href = `login.html?email=${encodeURIComponent(emailFromUrl)}&auto=true`;
+                return;
+            }
+            
+            // Check if user is already logged in
+            const userStr = localStorage.getItem('user');
+            const isLoggedIn = localStorage.getItem('isLoggedIn');
+            const isAdmin = localStorage.getItem('isAdmin');
+            
+            if (userStr || isLoggedIn) {
+                try {
+                    const user = userStr ? JSON.parse(userStr) : null;
+                    let redirectUrl = 'driver.html';
+                    
+                    // Only redirect to admin if user is actually an admin
+                    if (user && user.role === 'admin') {
+                        redirectUrl = 'admin.html';
+                    } else if (user && user.role === 'owner') {
+                        redirectUrl = 'owner.html';
+                    } else if (user && user.role === 'driver') {
+                        redirectUrl = 'driver.html';
+                    } else if (isAdmin === 'true' && user && user.isAdmin) {
+                        // Only if explicitly set as admin
+                        redirectUrl = 'admin.html';
+                    } else {
+                        // Default to driver page for all users
+                        redirectUrl = 'driver.html';
+                    }
+                    
+                    window.location.href = redirectUrl;
+                    return;
+                } catch (e) {
+                    console.error('Error parsing user data:', e);
+                    // On error, redirect to driver page
+                    window.location.href = 'driver.html';
+                    return;
+                }
+            }
+            
+            // No saved account, redirect to driver page (public access)
+            window.location.href = 'driver.html';
+        })();
+    </script>
+    <p style="text-align: center; padding: 2rem; font-family: Arial, sans-serif;">
+        جاري التوجيه... <a href="register.html">انقر هنا إذا لم يتم التوجيه تلقائياً</a>
+    </p>
+</body>
+</html>
+

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rakna - تسجيل الدخول</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #f0f9ff 0%, #faf5ff 100%);
+            padding: var(--spacing-xl);
+        }
+        .auth-card {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-2xl);
+            box-shadow: var(--shadow-xl);
+            max-width: 450px;
+            width: 100%;
+        }
+        .auth-header {
+            text-align: center;
+            margin-bottom: var(--spacing-2xl);
+        }
+        .auth-logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto var(--spacing-lg);
+            border-radius: var(--radius-full);
+            background: var(--primary-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: var(--white);
+        }
+        .auth-title {
+            font-size: var(--font-size-3xl);
+            font-weight: 800;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: var(--spacing-sm);
+        }
+        .auth-subtitle {
+            color: var(--gray-600);
+            font-size: var(--font-size-base);
+        }
+        .form-actions {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-xl);
+        }
+        .form-actions .btn {
+            flex: 1;
+        }
+        .auth-footer {
+            text-align: center;
+            margin-top: var(--spacing-xl);
+            padding-top: var(--spacing-xl);
+            border-top: 1px solid var(--gray-200);
+        }
+        .auth-footer a {
+            color: var(--primary-blue);
+            font-weight: 600;
+        }
+        .input-group {
+            position: relative;
+        }
+        .input-icon {
+            position: absolute;
+            right: var(--spacing-md);
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray-400);
+        }
+        .form-group input {
+            padding-right: 45px;
+        }
+        .password-toggle {
+            position: absolute;
+            left: var(--spacing-md);
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--gray-400);
+            cursor: pointer;
+            font-size: var(--font-size-lg);
+        }
+        .password-toggle:hover {
+            color: var(--primary-blue);
+        }
+        .forgot-password {
+            text-align: left;
+            margin-top: var(--spacing-sm);
+        }
+        .forgot-password a {
+            color: var(--primary-blue);
+            font-size: var(--font-size-sm);
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="auth-logo">
+                    <i class="fas fa-car"></i>
+                </div>
+                <h1 class="auth-title" data-translate="login.title">تسجيل الدخول</h1>
+                <p class="auth-subtitle" data-translate="login.subtitle">مرحباً بعودتك إلى Rakna</p>
+            </div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label data-translate="login.email">البريد الإلكتروني</label>
+                    <div class="input-group">
+                        <i class="fas fa-envelope input-icon"></i>
+                        <input type="email" id="email" required placeholder="example@email.com" data-translate-placeholder="login.email.placeholder">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label data-translate="login.password">كلمة المرور</label>
+                    <div class="input-group">
+                        <i class="fas fa-lock input-icon"></i>
+                        <input type="password" id="password" required placeholder="كلمة المرور" data-translate-placeholder="login.password.placeholder">
+                        <button type="button" class="password-toggle" onclick="togglePassword('password')">
+                            <i class="fas fa-eye" id="passwordToggle"></i>
+                        </button>
+                    </div>
+                    <div class="forgot-password">
+                        <a href="#" data-translate="login.forgotPassword">نسيت كلمة المرور؟</a>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="rememberMe">
+                        <span data-translate="login.rememberMe">تذكرني</span>
+                    </label>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary btn-large" data-translate="login.submit">تسجيل الدخول</button>
+                </div>
+            </form>
+
+            <div class="auth-footer">
+                <p data-translate="login.noAccount">ليس لديك حساب؟ <a href="register.html" data-translate="login.register">إنشاء حساب جديد</a></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification-container"></div>
+    <script src="js/adminConfig.js"></script>
+    <script src="js/language.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/login.js"></script>
+</body>
+</html>
+

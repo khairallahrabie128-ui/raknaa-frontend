@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rakna - نظام ركنة ذكي</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-car"></i>
+                <span>Rakna</span>
+            </div>
+            <div class="nav-menu">
+                <div class="language-switcher"></div>
+                <a href="login.html" class="btn btn-outline" data-translate="nav.login">تسجيل الدخول</a>
+                <a href="register.html" class="btn btn-primary" data-translate="nav.register">إنشاء حساب</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="hero-content">
+            <h1 class="hero-title" data-translate="visitor.title">مرحباً بك في Rakna</h1>
+            <p class="hero-subtitle" data-translate="visitor.subtitle">نظام ركنة ذكي للإسكندرية - حلول ذكية لمواقف السيارات في منطقة العطارين</p>
+            
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <span class="stat-number" id="garageCount">30+</span>
+                    <span class="stat-label" data-translate="visitor.stats.garages">موقف متاح</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">1000+</span>
+                    <span class="stat-label" data-translate="visitor.stats.users">مستخدم نشط</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">95%</span>
+                    <span class="stat-label" data-translate="visitor.stats.satisfaction">معدل الرضا</span>
+                </div>
+            </div>
+
+            <div class="hero-actions">
+                <a href="#parking-map" class="btn btn-primary btn-large">
+                    <i class="fas fa-map-marked-alt"></i>
+                    <span data-translate="visitor.cta.view">عرض الخريطة</span>
+                </a>
+                <a href="register.html" class="btn btn-secondary btn-large">
+                    <i class="fas fa-user-plus"></i>
+                    <span data-translate="visitor.cta.register">إنشاء حساب</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Parking Map Section -->
+    <section id="parking-map" class="section" style="padding: 0;">
+        <div class="container-fluid" style="padding: 0;">
+            <div class="driver-layout">
+                <!-- Map Container -->
+                <div class="map-container">
+                    <div id="map" style="width: 100%; height: 100vh; min-height: 600px;"></div>
+                    
+                    <!-- Map Legend -->
+                    <div class="map-legend">
+                        <h4 style="margin: 0 0 var(--spacing-sm) 0; font-size: var(--font-size-sm); font-weight: 600;" data-translate="map.legend.title">مفتاح الخريطة</h4>
+                        <div class="legend-item">
+                            <div class="legend-color available"></div>
+                            <span data-translate="map.legend.available">متاح</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color limited"></div>
+                            <span data-translate="map.legend.limited">محدود</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color full"></div>
+                            <span data-translate="map.legend.full">ممتلئ</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar -->
+                <div class="sidebar">
+                    <div class="sidebar-header">
+                        <h2 data-translate="driver.sidebar.title">ابحث عن موقف</h2>
+                        <button class="btn-icon" id="toggleSidebar" style="display: none;">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+
+                    <!-- Search and Filters -->
+                    <div class="search-filters">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="searchInput" placeholder="ابحث عن موقف..." data-translate-placeholder="driver.search.placeholder">
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label data-translate="driver.filters.availability">الحالة:</label>
+                            <select id="availabilityFilter">
+                                <option value="all" data-translate="driver.filters.all">الكل</option>
+                                <option value="available" data-translate="driver.filters.available">متاح</option>
+                                <option value="limited" data-translate="driver.filters.limited">محدود</option>
+                                <option value="full" data-translate="driver.filters.full">ممتلئ</option>
+                            </select>
+                        </div>
+
+                        <button class="btn btn-primary" id="findClosestBtn" style="width: 100%;">
+                            <i class="fas fa-crosshairs"></i>
+                            <span data-translate="driver.findClosest">أقرب موقف</span>
+                        </button>
+                    </div>
+
+                    <!-- Garage List -->
+                    <div class="garage-list" id="garageList">
+                        <!-- Dynamic content -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title" data-translate="features.title">مميزات النظام</h2>
+            <div class="features-grid">
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <h3 data-translate="features.search.title">بحث ذكي</h3>
+                    <p data-translate="features.search.desc">ابحث عن أقرب موقف متاح في منطقة العطارين بسهولة وسرعة</p>
+                </div>
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <h3 data-translate="features.booking.title">حجز فوري</h3>
+                    <p data-translate="features.booking.desc">احجز موقفك في ثوانٍ معدودة بدون تعقيدات</p>
+                </div>
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">
+                        <i class="fas fa-map-marked-alt"></i>
+                    </div>
+                    <h3 data-translate="features.map.title">خرائط تفاعلية</h3>
+                    <p data-translate="features.map.desc">شاهد المواقف على الخريطة مباشرة مع تحديثات فورية</p>
+                </div>
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3 data-translate="features.security.title">آمن ومضمون</h3>
+                    <p data-translate="features.security.desc">نظام دفع آمن ومراقبة 24/7 لضمان سلامتك</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="section" style="background: var(--gray-50);">
+        <div class="container">
+            <h2 class="section-title" data-translate="howitworks.title">كيف يعمل النظام</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <h3 data-translate="howitworks.step1.title">ابحث عن موقف</h3>
+                    <p data-translate="howitworks.step1.desc">استخدم الخريطة للعثور على أقرب موقف متاح في منطقة العطارين</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <h3 data-translate="howitworks.step2.title">احجز موقفك</h3>
+                    <p data-translate="howitworks.step2.desc">اختر الوقت والمدة المناسبة واحجز موقفك بضغطة واحدة</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);">
+                        <i class="fas fa-credit-card"></i>
+                    </div>
+                    <h3 data-translate="howitworks.step3.title">ادفع بسهولة</h3>
+                    <p data-translate="howitworks.step3.desc">ادفع عبر طرق دفع آمنة ومتعددة (بطاقات، محافظ رقمية)</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h3 data-translate="howitworks.step4.title">استمتع بالرحلة</h3>
+                    <p data-translate="howitworks.step4.desc">اذهب إلى موقفك المحدد واستمتع برحلتك بدون قلق</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4 data-translate="footer.title">Rakna</h4>
+                <p data-translate="footer.subtitle">نظام ركنة ذكي للإسكندرية</p>
+            </div>
+            <div class="footer-section">
+                <h4 data-translate="footer.quicklinks">روابط سريعة</h4>
+                <ul>
+                    <li><a href="driver.html" data-translate="nav.drivers">للسائقين</a></li>
+                    <li><a href="owner.html" data-translate="nav.owners">لأصحاب المواقف</a></li>
+                    <li><a href="admin.html" data-translate="nav.admin">للإدارة</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4 data-translate="footer.support">الدعم</h4>
+                <ul>
+                    <li><a href="#" data-translate="footer.help">مساعدة</a></li>
+                    <li><a href="#" data-translate="footer.faq">الأسئلة الشائعة</a></li>
+                    <li><a href="#" data-translate="footer.contact">اتصل بنا</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4 data-translate="footer.contactinfo">معلومات الاتصال</h4>
+                <ul>
+                    <li><i class="fas fa-map-marker-alt"></i> <span data-translate="footer.contact.address">الإسكندرية، مصر</span></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p data-translate="footer.copyright">&copy; 2025 Rakna - جميع الحقوق محفوظة</p>
+        </div>
+    </footer>
+
+    <!-- Booking Modal -->
+    <div id="bookingModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 data-translate="booking.title">حجز موقف</h2>
+                <button class="btn-icon" onclick="closeBookingModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="bookingForm" onsubmit="handleBookingSubmit(event)">
+                <input type="hidden" id="bookingGarageName" data-garage-id="">
+                
+                <div class="form-group">
+                    <label data-translate="booking.garage">الموقف:</label>
+                    <input type="text" id="bookingGarageDisplay" readonly>
+                </div>
+
+                <div class="form-group">
+                    <label data-translate="booking.startTime">وقت البداية:</label>
+                    <input type="datetime-local" id="bookingStartTime" required>
+                </div>
+
+                <div class="form-group">
+                    <label data-translate="booking.duration">المدة (ساعات):</label>
+                    <input type="number" id="bookingDuration" min="1" max="24" value="1" required onchange="updateBookingCost()">
+                </div>
+
+                <div class="form-group">
+                    <label data-translate="booking.space">رقم الموقف (اختياري):</label>
+                    <input type="text" id="bookingSpace" placeholder="اتركه فارغاً للاختيار التلقائي">
+                </div>
+
+                <!-- Payment Section (for guests) -->
+                <div id="paymentSection" style="display: none;">
+                    <h3 data-translate="payment.title">معلومات الدفع</h3>
+                    
+                    <div class="form-group">
+                        <label data-translate="payment.method">طريقة الدفع:</label>
+                        <select id="paymentMethod" required onchange="togglePaymentDetails()">
+                            <option value="" data-translate="payment.select">اختر طريقة الدفع</option>
+                            <option value="VISA" data-translate="payment.visa">VISA</option>
+                            <option value="MIZA" data-translate="payment.miza">MIZA</option>
+                            <option value="CREDIT" data-translate="payment.credit">بطاقة ائتمان</option>
+                            <option value="INSTAPAY" data-translate="payment.instapay">INSTAPAY</option>
+                            <option value="WALLET" data-translate="payment.wallet">محفظة رقمية</option>
+                        </select>
+                    </div>
+
+                    <div id="cardDetails" style="display: none;">
+                        <div class="form-group">
+                            <label data-translate="payment.cardNumber">رقم البطاقة:</label>
+                            <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label data-translate="payment.expiry">تاريخ الانتهاء:</label>
+                                <input type="text" id="cardExpiry" placeholder="MM/YY" maxlength="5">
+                            </div>
+                            <div class="form-group">
+                                <label data-translate="payment.cvv">CVV:</label>
+                                <input type="text" id="cardCVV" placeholder="123" maxlength="3">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label data-translate="booking.totalCost">التكلفة الإجمالية:</label>
+                    <input type="text" id="bookingTotalCost" readonly style="font-size: 1.2rem; font-weight: 700; color: var(--primary-color);">
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeBookingModal()" data-translate="booking.cancel">إلغاء</button>
+                    <button type="submit" class="btn btn-primary" data-translate="booking.submit">احجز الآن</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="notification-container"></div>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+    <script src="js/adminConfig.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/driver.js"></script>
+    <script src="js/realtime.js"></script>
+    <script src="js/language.js"></script>
+    <style>
+        .driver-layout {
+            display: flex;
+            height: 100vh;
+            min-height: 600px;
+        }
+        .map-container {
+            flex: 1;
+            position: relative;
+        }
+        .sidebar {
+            width: 400px;
+            background: var(--white);
+            border-left: 1px solid var(--gray-200);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .sidebar-header {
+            padding: var(--spacing-lg);
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .search-filters {
+            padding: var(--spacing-lg);
+            border-bottom: 1px solid var(--gray-200);
+        }
+        .search-box {
+            position: relative;
+            margin-bottom: var(--spacing-md);
+        }
+        .search-box i {
+            position: absolute;
+            right: var(--spacing-md);
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray-400);
+        }
+        .search-box input {
+            width: 100%;
+            padding: var(--spacing-md) var(--spacing-md) var(--spacing-md) var(--spacing-xl);
+            border: 1px solid var(--gray-300);
+            border-radius: var(--radius-md);
+            font-size: var(--font-size-base);
+        }
+        .filter-group {
+            margin-bottom: var(--spacing-md);
+        }
+        .filter-group label {
+            display: block;
+            margin-bottom: var(--spacing-xs);
+            font-weight: 600;
+            font-size: var(--font-size-sm);
+        }
+        .filter-group select {
+            width: 100%;
+            padding: var(--spacing-md);
+            border: 1px solid var(--gray-300);
+            border-radius: var(--radius-md);
+        }
+        .garage-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: var(--spacing-md);
+        }
+        .garage-card {
+            background: var(--white);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .garage-card:hover {
+            border-color: var(--primary-color);
+            box-shadow: var(--shadow-md);
+        }
+        .garage-card.selected {
+            border-color: var(--primary-color);
+            background: var(--primary-50);
+        }
+        .garage-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: var(--spacing-sm);
+        }
+        .garage-name {
+            font-weight: 700;
+            font-size: var(--font-size-lg);
+            color: var(--gray-900);
+        }
+        .garage-status {
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-xs);
+            font-weight: 600;
+        }
+        .garage-status.available {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .garage-status.limited {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .garage-status.full {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        .garage-info {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xs);
+            margin-bottom: var(--spacing-md);
+            font-size: var(--font-size-sm);
+            color: var(--gray-600);
+        }
+        .garage-actions {
+            display: flex;
+            gap: var(--spacing-sm);
+        }
+        .garage-actions .btn {
+            flex: 1;
+        }
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 100%;
+                position: fixed;
+                top: 0;
+                right: -100%;
+                z-index: 1000;
+                transition: right 0.3s ease;
+            }
+            .sidebar.active {
+                right: 0;
+            }
+        }
+    </style>
+</body>
+</html>
+
+

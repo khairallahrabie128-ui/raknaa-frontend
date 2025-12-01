@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Console Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #333;
+            margin-top: 0;
+        }
+        .console-output {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            max-height: 600px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .log-info { color: #4ec9b0; }
+        .log-success { color: #4ec9b0; }
+        .log-error { color: #f48771; }
+        .log-warning { color: #dcdcaa; }
+        .log-api { color: #569cd6; }
+        button {
+            background: #007acc;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #005a9e;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Booking Console Logs Test</h1>
+        <div class="info-box">
+            <strong>Instructions:</strong> Click the button below to simulate a booking submission. 
+            This will show you exactly what console logs and API responses you would see when clicking the booking button in the actual application.
+        </div>
+        <button id="testBookingBtn">🚀 Simulate Booking Click</button>
+        <button id="clearLogsBtn">🗑️ Clear Logs</button>
+    </div>
+
+    <div class="container">
+        <h2>Console Output:</h2>
+        <div id="consoleOutput" class="console-output">Waiting for test to run...\n</div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:5000/api/v1';
+        let logCount = 0;
+
+        function addLog(message, type = 'info') {
+            const output = document.getElementById('consoleOutput');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = `log-${type}`;
+            const logEntry = `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            output.innerHTML += logEntry;
+            output.scrollTop = output.scrollHeight;
+            logCount++;
+        }
+
+        function clearLogs() {
+            document.getElementById('consoleOutput').innerHTML = '';
+            logCount = 0;
+        }
+
+        async function simulateBooking() {
+            clearLogs();
+            addLog('🚀 ========== BOOKING SUBMIT STARTED ==========', 'info');
+            addLog('🚀 Event: SubmitEvent', 'info');
+            addLog('🚀 Form: bookingForm', 'info');
+            addLog(`🚀 Timestamp: ${new Date().toISOString()}`, 'info');
+            
+            // Simulate button state
+            addLog('🔵 Setting button to loading state...', 'info');
+            addLog('   Button text: "جاري المعالجة..." / "Processing..."', 'info');
+            addLog('   Button disabled: true', 'info');
+            
+            // Check garages
+            addLog('\n🔵 Checking garages data...', 'info');
+            addLog('   Garages available: true', 'success');
+            
+            // Get garage ID
+            addLog('\n🔵 Getting garage information...', 'info');
+            const testGarageId = 1;
+            addLog(`   Garage Name Input: <input id="bookingGarageName" data-garage-id="${testGarageId}">`, 'info');
+            addLog(`   Garage ID from dataset: ${testGarageId}`, 'success');
+            
+            // Find garage
+            addLog('\n🔵 Finding garage in garages array...', 'info');
+            addLog(`   Found garage: Test Garage (ID: ${testGarageId})`, 'success');
+            
+            // Get form data
+            addLog('\n🔵 Reading booking form data...', 'info');
+            const formData = {
+                duration: 2,
+                priceType: 'hourly',
+                selectedRoute: 'direct',
+                spaceNumber: '1',
+                startTime: new Date(Date.now() + 3600000).toISOString().slice(0, 16)
+            };
+            addLog('   Duration: ' + formData.duration + ' hours', 'info');
+            addLog('   Price Type: ' + formData.priceType, 'info');
+            addLog('   Selected Route: ' + formData.selectedRoute, 'info');
+            addLog('   Space Number: ' + formData.spaceNumber, 'info');
+            addLog('   Start Time: ' + formData.startTime, 'info');
+            
+            // Check API service
+            addLog('\n🔵 Checking API Service...', 'info');
+            addLog('   API Service available: true', 'success');
+            addLog('   createBooking method available: true', 'success');
+            
+            // Prepare booking data
+            addLog('\n🔵 Preparing booking data...', 'info');
+            const bookingData = {
+                user_id: 1,
+                garage_id: testGarageId,
+                start_time: new Date(Date.now() + 3600000).toISOString(),
+                duration_hours: formData.duration,
+                price_type: formData.priceType,
+                selected_route: formData.selectedRoute,
+                space_number: formData.spaceNumber
+            };
+            addLog('🔵 Booking data prepared:', 'info');
+            addLog(JSON.stringify(bookingData, null, 2), 'api');
+            
+            // API Request
+            addLog('\n🌐 API Request:', 'api');
+            addLog('   URL: ' + API_BASE_URL + '/bookings', 'api');
+            addLog('   Method: POST', 'api');
+            addLog('   Headers: { "Content-Type": "application/json" }', 'api');
+            addLog('   Body: ' + JSON.stringify(bookingData, null, 2), 'api');
+            
+            // Try API call
+            try {
+                addLog('\n⏳ Sending API request...', 'info');
+                
+                const response = await fetch(API_BASE_URL + '/bookings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(bookingData)
+                });
+                
+                const data = await response.json();
+                
+                addLog('\n🌐 API Response:', 'api');
+                addLog(`   Status: ${response.status} ${response.statusText}`, response.ok ? 'success' : 'error');
+                addLog('   Response Data:', 'api');
+                addLog(JSON.stringify(data, null, 2), response.ok ? 'success' : 'error');
+                
+                if (response.ok && data.success) {
+                    addLog('\n✅ Booking created successfully!', 'success');
+                    addLog('   Booking ID: ' + (data.data?.id || 'N/A'), 'success');
+                    addLog('   Garage ID: ' + (data.data?.garage_id || 'N/A'), 'success');
+                    addLog('   Start Time: ' + (data.data?.start_time || 'N/A'), 'success');
+                    addLog('   Duration: ' + (data.data?.duration_hours || 'N/A') + ' hours', 'success');
+                    addLog('   Total Cost: ' + (data.data?.total_cost || 'N/A') + ' EGP', 'success');
+                    addLog('   Status: ' + (data.data?.status || 'N/A'), 'success');
+                    addLog('   Payment Status: ' + (data.data?.payment_status || 'N/A'), 'success');
+                    
+                    addLog('\n✅ Updating garage availability locally...', 'info');
+                    addLog('   Occupied spaces: +1', 'info');
+                    
+                    addLog('\n✅ Refreshing display...', 'info');
+                    addLog('   Calling renderGarages()', 'info');
+                    addLog('   Calling updateMapMarkers()', 'info');
+                    
+                    addLog('\n✅ Showing success notification...', 'info');
+                    addLog('   Message: "تم إنشاء الحجز بنجاح!" / "Booking created successfully!"', 'success');
+                    
+                    addLog('\n✅ Closing booking modal...', 'info');
+                    addLog('✅ Resetting booking form...', 'info');
+                    addLog('✅ Restoring button state...', 'info');
+                    
+                    addLog('\n✅ ========== BOOKING SUCCESS ==========', 'success');
+                } else {
+                    throw new Error(data.message || 'Booking failed');
+                }
+            } catch (error) {
+                addLog('\n❌ ========== BOOKING ERROR ==========', 'error');
+                addLog('❌ Error creating booking:', 'error');
+                addLog('   Message: ' + error.message, 'error');
+                
+                if (error.message.includes('fetch failed') || error.message.includes('Failed to fetch')) {
+                    addLog('\n⚠️ Network error detected, using local fallback mode...', 'warning');
+                    addLog('   This means the backend API is not available', 'warning');
+                    addLog('   The system will work in fallback mode', 'warning');
+                    
+                    addLog('\n📝 Using local fallback mode for booking...', 'info');
+                    addLog('📝 Updated garage availability locally:', 'info');
+                    addLog('   Occupied: +1', 'info');
+                    
+                    addLog('\n✅ Showing success message (fallback mode)...', 'info');
+                    addLog('   Message: "تم إنشاء الحجز بنجاح!" / "Booking created successfully!"', 'success');
+                    
+                    addLog('\n✅ Booking flow completed (fallback mode)', 'success');
+                } else {
+                    addLog('   Status: ' + (error.status || 'N/A'), 'error');
+                    addLog('   Error Data: ' + JSON.stringify(error.data || {}, null, 2), 'error');
+                    
+                    if (error.status === 409) {
+                        addLog('\n⚠️ Availability Error:', 'warning');
+                        addLog('   The selected slot is not available', 'warning');
+                        addLog('   Showing error notification to user', 'warning');
+                    } else if (error.status === 400) {
+                        addLog('\n⚠️ Validation Error:', 'warning');
+                        addLog('   Invalid booking data provided', 'warning');
+                    }
+                }
+            }
+            
+            addLog('\n🚀 ========== BOOKING SUBMIT ENDED ==========', 'info');
+        }
+
+        document.getElementById('testBookingBtn').addEventListener('click', simulateBooking);
+        document.getElementById('clearLogsBtn').addEventListener('click', clearLogs);
+    </script>
+</body>
+</html>
+

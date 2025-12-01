@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rakna - إدارة النظام (Admin Panel)</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* Admin page specific styling */
+        .admin-page-indicator {
+            position: fixed;
+            top: 70px;
+            right: 20px;
+            background: linear-gradient(135deg, #1e40af 0%, #7c3aed 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            z-index: 1000;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .admin-page-indicator::before {
+            content: "🛡️ ";
+        }
+        .admin-tabs {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-xl);
+            border-bottom: 2px solid var(--gray-200);
+        }
+        .admin-tab {
+            padding: var(--spacing-md) var(--spacing-xl);
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-size: var(--font-size-base);
+            font-weight: 600;
+            color: var(--gray-600);
+            transition: var(--transition);
+            margin-bottom: -2px;
+        }
+        .admin-tab.active {
+            color: var(--primary-blue);
+            border-bottom-color: var(--primary-blue);
+        }
+        .admin-tab:hover {
+            color: var(--primary-blue);
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .activity-list {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-xl);
+            box-shadow: var(--shadow-md);
+        }
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            padding: var(--spacing-md);
+            border-bottom: 1px solid var(--gray-200);
+        }
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--gray-100);
+            color: var(--gray-600);
+        }
+        .activity-content {
+            flex: 1;
+        }
+        .activity-title {
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: var(--spacing-xs);
+        }
+        .activity-desc {
+            font-size: var(--font-size-sm);
+            color: var(--gray-600);
+        }
+        .activity-time {
+            font-size: var(--font-size-sm);
+            color: var(--gray-500);
+        }
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--spacing-lg);
+            margin-top: var(--spacing-xl);
+        }
+        .status-item {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow-md);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        .status-indicator.success { background: var(--success); }
+        .status-indicator.warning { background: var(--warning); }
+        .status-indicator.error { background: var(--error); }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-car"></i>
+                <span>Rakna</span>
+            </div>
+            <div class="nav-menu">
+                <div class="language-switcher"></div>
+                <a href="visitor.html" class="btn btn-outline" data-translate="nav.home">الرئيسية</a>
+                <a href="driver.html" class="btn btn-outline" data-translate="nav.drivers">للسائقين</a>
+                <a href="owner.html" class="btn btn-outline" data-translate="nav.owners">لأصحاب المواقف</a>
+                <a href="admin.html" class="btn btn-primary" data-translate="nav.admin">لوحة التحكم</a>
+                <button class="btn btn-outline" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span data-translate="nav.logout">تسجيل الخروج</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Admin Page Indicator -->
+    <div class="admin-page-indicator">صفحة المسئول</div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="dashboard">
+            <div class="dashboard-header">
+                <div>
+                    <h1 data-translate="admin.title">إدارة النظام</h1>
+                    <p style="color: var(--gray-600); margin-top: var(--spacing-xs); font-size: var(--font-size-sm);">
+                        إدارة جميع المستخدمين والمواقف والحجوزات في النظام
+                    </p>
+                </div>
+                <div class="dashboard-actions">
+                    <button class="btn btn-outline" id="refreshDataBtn">
+                        <i class="fas fa-sync-alt"></i>
+                        <span data-translate="admin.actions.refresh">تحديث البيانات</span>
+                    </button>
+                    <button class="btn btn-primary" id="settingsBtn">
+                        <i class="fas fa-cog"></i>
+                        <span data-translate="admin.actions.settings">الإعدادات</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Admin system-wide stats banner -->
+            <div style="background: linear-gradient(135deg, #1e40af 0%, #7c3aed 100%); color: white; padding: var(--spacing-lg); border-radius: var(--radius-lg); margin-bottom: var(--spacing-xl);">
+                <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+                    <i class="fas fa-shield-alt" style="font-size: 2rem;"></i>
+                    <div>
+                        <h3 style="margin: 0; color: white;">لوحة تحكم المسئول - إدارة النظام</h3>
+                        <p style="margin: 0; opacity: 0.9; font-size: var(--font-size-sm);">إحصائيات شاملة لجميع المستخدمين والمواقف والحجوزات</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Grid - Matching new design exactly -->
+            <div class="stats-grid">
+                <!-- Total Users - Blue -->
+                <div class="stat-card" style="border-left: 4px solid #3b82f6;">
+                    <div class="stat-card-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                        <div>
+                            <p style="font-size: 0.875rem; color: var(--gray-600); margin-bottom: 0.25rem; font-weight: 600;">TOTAL USERS:</p>
+                            <p class="stat-card-value" id="adminTotalUsers" style="font-size: 2rem; font-weight: bold; color: var(--gray-900); margin: 0;">0</p>
+                            <p style="font-size: 0.75rem; color: var(--gray-500); margin-top: 0.25rem;">جميع المستخدمين (سائقين + مالكين)</p>
+                        </div>
+                        <div style="background: #dbeafe; padding: 0.75rem; border-radius: 0.5rem;">
+                            <i class="fas fa-users" style="color: #3b82f6; font-size: 1.5rem;"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Total Garages - Green -->
+                <div class="stat-card" style="border-left: 4px solid #10b981;">
+                    <div class="stat-card-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                        <div>
+                            <p style="font-size: 0.875rem; color: var(--gray-600); margin-bottom: 0.25rem; font-weight: 600;">TOTAL GARAGES:</p>
+                            <p class="stat-card-value" id="adminTotalGarages" style="font-size: 2rem; font-weight: bold; color: var(--gray-900); margin: 0;">0</p>
+                            <p style="font-size: 0.75rem; color: var(--gray-500); margin-top: 0.25rem;">جميع المواقف من جميع المالكين</p>
+                        </div>
+                        <div style="background: #d1fae5; padding: 0.75rem; border-radius: 0.5rem;">
+                            <i class="fas fa-building" style="color: #10b981; font-size: 1.5rem;"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Bookings - Yellow -->
+                <div class="stat-card" style="border-left: 4px solid #f59e0b;">
+                    <div class="stat-card-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                        <div>
+                            <p style="font-size: 0.875rem; color: var(--gray-600); margin-bottom: 0.25rem; font-weight: 600;">ACTIVE BOOKINGS:</p>
+                            <p class="stat-card-value" id="adminActiveBookings" style="font-size: 2rem; font-weight: bold; color: var(--gray-900); margin: 0;">0</p>
+                            <p style="font-size: 0.75rem; color: var(--gray-500); margin-top: 0.25rem;">جميع الحجوزات النشطة</p>
+                        </div>
+                        <div style="background: #fef3c7; padding: 0.75rem; border-radius: 0.5rem;">
+                            <i class="fas fa-calendar-check" style="color: #f59e0b; font-size: 1.5rem;"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Health - Red -->
+                <div class="stat-card" style="border-left: 4px solid #ef4444;">
+                    <div class="stat-card-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                        <div>
+                            <p style="font-size: 0.875rem; color: var(--gray-600); margin-bottom: 0.25rem; font-weight: 600;">SYSTEM HEALTH:</p>
+                            <p class="stat-card-value" id="adminSystemHealth" style="font-size: 2rem; font-weight: bold; color: var(--gray-900); margin: 0;">98%</p>
+                            <div style="display: flex; align-items: center; gap: 0.25rem; margin-top: 0.25rem;">
+                                <i class="fas fa-check-circle" style="color: var(--success); font-size: 0.75rem;"></i>
+                                <span style="font-size: 0.75rem; color: var(--gray-500);">جميع الأنظمة تعمل</span>
+                            </div>
+                        </div>
+                        <div style="background: #fee2e2; padding: 0.75rem; border-radius: 0.5rem;">
+                            <i class="fas fa-heartbeat" style="color: #ef4444; font-size: 1.5rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="admin-tabs">
+                <button class="admin-tab active" data-tab="overview">Overview</button>
+                <button class="admin-tab" data-tab="users">Users</button>
+                <button class="admin-tab" data-tab="garages">Garages</button>
+                <button class="admin-tab" data-tab="analytics">Analytics</button>
+            </div>
+
+            <div id="overviewTab" class="tab-content active">
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: var(--spacing-xl);">
+                    <div class="activity-list">
+                        <h3 style="margin-bottom: var(--spacing-lg);">Recent Activity</h3>
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <i class="fas fa-user-plus"></i>
+                            </div>
+                            <div class="activity-content">
+                                <div class="activity-title">مستخدم جديد</div>
+                                <div class="activity-desc">تم تسجيل مستخدم جديد في النظام</div>
+                            </div>
+                            <div class="activity-time">منذ 5 دقائق</div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <i class="fas fa-car"></i>
+                            </div>
+                            <div class="activity-content">
+                                <div class="activity-title">حجز جديد</div>
+                                <div class="activity-desc">تم إنشاء حجز جديد في موقف العطارين الرئيسي</div>
+                            </div>
+                            <div class="activity-time">منذ 12 دقيقة</div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <i class="fas fa-building"></i>
+                            </div>
+                            <div class="activity-content">
+                                <div class="activity-title">موقف جديد</div>
+                                <div class="activity-desc">تم إضافة موقف جديد من قبل صاحب الموقف</div>
+                            </div>
+                            <div class="activity-time">منذ ساعة</div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="activity-list">
+                            <h3 style="margin-bottom: var(--spacing-lg);">System Status</h3>
+                            <div class="status-grid">
+                                <div class="status-item">
+                                    <div class="status-indicator success"></div>
+                                    <div>
+                                        <div style="font-weight: 600; font-size: var(--font-size-sm);">API Status</div>
+                                        <div style="font-size: var(--font-size-xs); color: var(--gray-500);">Connected</div>
+                                    </div>
+                                </div>
+                                <div class="status-item">
+                                    <div class="status-indicator success"></div>
+                                    <div>
+                                        <div style="font-weight: 600; font-size: var(--font-size-sm);" data-translate="admin.status.db">قاعدة البيانات</div>
+                                        <div style="font-size: var(--font-size-xs); color: var(--gray-500);" data-translate="admin.status.connected">متصل</div>
+                                    </div>
+                                </div>
+                                <div class="status-item">
+                                    <div class="status-indicator warning"></div>
+                                    <div>
+                                        <div style="font-weight: 600; font-size: var(--font-size-sm);" data-translate="admin.status.sensors">المستشعرات</div>
+                                        <div style="font-size: var(--font-size-xs); color: var(--gray-500);" data-translate="admin.status.partial">جزئي</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="usersTab" class="tab-content">
+                <div class="table-container">
+                    <h3 style="margin-bottom: var(--spacing-lg); display: flex; align-items: center; gap: var(--spacing-md);">
+                        <i class="fas fa-users" style="color: var(--primary-blue);"></i>
+                        <span data-translate="admin.users.title">إدارة المستخدمين</span>
+                        <span style="font-size: var(--font-size-sm); color: var(--gray-600); font-weight: normal;">
+                            (جميع المستخدمين في النظام)
+                        </span>
+                    </h3>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th data-translate="admin.users.table.name">الاسم / البريد</th>
+                                <th data-translate="admin.users.table.role">النوع</th>
+                                <th data-translate="admin.users.table.phone">الهاتف</th>
+                                <th data-translate="admin.users.table.registered">تاريخ التسجيل</th>
+                                <th data-translate="admin.users.table.status">الحالة</th>
+                                <th data-translate="admin.users.table.actions">الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody">
+                            <!-- Dynamic content from admin.js -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="garagesTab" class="tab-content">
+                <div class="table-container">
+                    <h3 style="margin-bottom: var(--spacing-lg); display: flex; align-items: center; gap: var(--spacing-md);">
+                        <i class="fas fa-building" style="color: var(--primary-blue);"></i>
+                        <span data-translate="admin.garages.title">جميع المواقف في النظام</span>
+                        <span style="font-size: var(--font-size-sm); color: var(--gray-600); font-weight: normal;">
+                            (من جميع المالكين)
+                        </span>
+                    </h3>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th data-translate="admin.garages.table.name">اسم الموقف</th>
+                                <th data-translate="admin.garages.table.owner">صاحب الموقف</th>
+                                <th data-translate="admin.garages.table.location">الموقع</th>
+                                <th data-translate="admin.garages.table.capacity">السعة</th>
+                                <th data-translate="admin.garages.table.occupied">المشغول</th>
+                                <th data-translate="admin.garages.table.status">الحالة</th>
+                                <th data-translate="admin.garages.table.actions">الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="garagesTableBody">
+                            <!-- Dynamic content from admin.js -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="analyticsTab" class="tab-content">
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: var(--spacing-xl); margin-bottom: var(--spacing-xl);">
+                    <div class="table-container">
+                        <h3 style="margin-bottom: var(--spacing-lg);" data-translate="admin.analytics.bookings">جميع الحجوزات في النظام</h3>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th data-translate="admin.analytics.table.booking">رقم الحجز</th>
+                                    <th data-translate="admin.analytics.table.garage">الموقف</th>
+                                    <th data-translate="admin.analytics.table.user">المستخدم</th>
+                                    <th data-translate="admin.analytics.table.time">الوقت</th>
+                                    <th data-translate="admin.analytics.table.status">الحالة</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bookingsTableBody">
+                                <!-- Dynamic content from admin.js -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div>
+                        <div class="stats-grid" style="grid-template-columns: 1fr;">
+                            <div class="stat-card" style="border-left: 4px solid #10b981;">
+                                <div class="stat-card-header">
+                                    <span class="stat-card-title" data-translate="admin.analytics.totalrevenue">إجمالي الإيرادات</span>
+                                    <div class="stat-card-icon" style="background: #d1fae5; color: #10b981;">
+                                        <i class="fas fa-chart-line"></i>
+                                    </div>
+                                </div>
+                                <div class="stat-card-value" id="totalRevenue">0 <span style="font-size: 1rem;">جنيه</span></div>
+                                <div class="stat-card-change">
+                                    <i class="fas fa-arrow-up" style="color: var(--success);"></i>
+                                    <span data-translate="admin.analytics.revenuechange">من هذا الشهر</span>
+                                </div>
+                            </div>
+                            <div class="stat-card" style="border-left: 4px solid #3b82f6;">
+                                <div class="stat-card-header">
+                                    <span class="stat-card-title">متوسط الإيرادات اليومية</span>
+                                    <div class="stat-card-icon" style="background: #dbeafe; color: #3b82f6;">
+                                        <i class="fas fa-calendar-day"></i>
+                                    </div>
+                                </div>
+                                <div class="stat-card-value" id="avgDailyRevenue">0 <span style="font-size: 1rem;">جنيه</span></div>
+                                <div class="stat-card-change">
+                                    <small style="color: var(--gray-500);">آخر 30 يوم</small>
+                                </div>
+                            </div>
+                            <div class="stat-card" style="border-left: 4px solid #f59e0b;">
+                                <div class="stat-card-header">
+                                    <span class="stat-card-title">عدد المالكين</span>
+                                    <div class="stat-card-icon" style="background: #fef3c7; color: #f59e0b;">
+                                        <i class="fas fa-user-tie"></i>
+                                    </div>
+                                </div>
+                                <div class="stat-card-value" id="totalOwners">0</div>
+                                <div class="stat-card-change">
+                                    <small style="color: var(--gray-500);">أصحاب مواقف نشطين</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- System Reports Section - Admin Only -->
+                <div class="table-container">
+                    <h3 style="margin-bottom: var(--spacing-lg); display: flex; align-items: center; gap: var(--spacing-md);">
+                        <i class="fas fa-file-alt" style="color: var(--primary-blue);"></i>
+                        <span>تقارير النظام</span>
+                    </h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--spacing-lg);">
+                        <button class="btn btn-outline" style="padding: var(--spacing-lg); flex-direction: column; align-items: center; gap: var(--spacing-md);" onclick="generateReport('users')">
+                            <i class="fas fa-users" style="font-size: 2rem; color: var(--primary-blue);"></i>
+                            <span>تقرير المستخدمين</span>
+                        </button>
+                        <button class="btn btn-outline" style="padding: var(--spacing-lg); flex-direction: column; align-items: center; gap: var(--spacing-md);" onclick="generateReport('garages')">
+                            <i class="fas fa-building" style="font-size: 2rem; color: var(--primary-blue);"></i>
+                            <span>تقرير المواقف</span>
+                        </button>
+                        <button class="btn btn-outline" style="padding: var(--spacing-lg); flex-direction: column; align-items: center; gap: var(--spacing-md);" onclick="generateReport('bookings')">
+                            <i class="fas fa-calendar-check" style="font-size: 2rem; color: var(--primary-blue);"></i>
+                            <span>تقرير الحجوزات</span>
+                        </button>
+                        <button class="btn btn-outline" style="padding: var(--spacing-lg); flex-direction: column; align-items: center; gap: var(--spacing-md);" onclick="generateReport('revenue')">
+                            <i class="fas fa-money-bill-wave" style="font-size: 2rem; color: var(--primary-blue);"></i>
+                            <span>تقرير الإيرادات</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="notification-container"></div>
+    <script src="js/adminConfig.js"></script>
+    <script src="js/realtime.js"></script>
+    <script src="js/language.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/admin.js"></script>
+    <script>
+        // Add logout functionality
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            if (window.logout) {
+                window.logout();
+            }
+        });
+    </script>
+</body>
+</html>
+
+
