@@ -1,281 +1,0 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rakna - لوحة تحكم صاحب الموقف (Owner Dashboard)</title>
-    <link rel="stylesheet" href="styles.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <style>
-        /* Owner page specific styling */
-        .owner-page-indicator {
-            position: fixed;
-            top: 70px;
-            right: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            z-index: 1000;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        .owner-page-indicator::before {
-            content: "👤 ";
-        }
-    </style>
-</head>
-<body>
-    <!-- Navigation -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="nav-brand">
-                <i class="fas fa-car"></i>
-                <span>Rakna</span>
-            </div>
-            <div class="nav-menu">
-                <div class="language-switcher"></div>
-                <a href="visitor.html" class="btn btn-outline" data-translate="nav.home">الرئيسية</a>
-                <a href="driver.html" class="btn btn-outline" data-translate="nav.drivers">للسائقين</a>
-                <a href="admin.html" class="btn btn-outline" data-translate="nav.admin">للإدارة</a>
-                <button class="btn btn-outline" id="logoutBtn">
-                    <i class="fas fa-sign-out-alt"></i>
-                    <span data-translate="nav.logout">تسجيل الخروج</span>
-                </button>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Owner Page Indicator -->
-    <div class="owner-page-indicator">صفحة صاحب الموقف</div>
-
-    <!-- Main Content -->
-    <main class="main-content">
-        <div class="dashboard">
-            <div class="dashboard-header">
-                <div>
-                    <h1 data-translate="owner.title">لوحة تحكم صاحب الموقف</h1>
-                    <p style="color: var(--gray-600); margin-top: var(--spacing-xs); font-size: var(--font-size-sm);">
-                        إدارة جراجاتك وحجوزاتك وإيراداتك
-                    </p>
-                </div>
-                <div class="dashboard-actions">
-                    <button class="btn btn-outline" id="exportBtn">
-                        <i class="fas fa-download"></i>
-                        <span data-translate="owner.actions.export">تصدير البيانات</span>
-                    </button>
-                    <button class="btn btn-primary" id="addGarageBtn">
-                        <i class="fas fa-plus"></i>
-                        <span data-translate="owner.actions.add">إضافة موقف</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Owner-specific stats banner -->
-            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: var(--spacing-lg); border-radius: var(--radius-lg); margin-bottom: var(--spacing-xl);">
-                <div style="display: flex; align-items: center; gap: var(--spacing-md);">
-                    <i class="fas fa-user-circle" style="font-size: 2rem;"></i>
-                    <div>
-                        <h3 style="margin: 0; color: white;">لوحة تحكم صاحب الموقف</h3>
-                        <p style="margin: 0; opacity: 0.9; font-size: var(--font-size-sm);">إحصائيات جراجاتك وحجوزاتك</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Stats Grid - Matching new design exactly -->
-            <div class="stats-grid">
-                <!-- Total Spaces - Purple with P icon -->
-                <div class="stat-card" style="border-left: 4px solid #667eea;">
-                    <div class="stat-card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                        <div style="width: 48px; height: 48px; background: #9333ea; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                            <span style="color: white; font-weight: bold; font-size: 1.25rem;">P</span>
-                        </div>
-                        <span style="font-size: 0.75rem; font-weight: 600; color: #10b981; background: #d1fae5; padding: 0.25rem 0.5rem; border-radius: 0.25rem;">
-                            +5%
-                        </span>
-                    </div>
-                    <div class="stat-card-value" id="totalSpaces" style="font-size: 2.5rem; font-weight: bold; margin-bottom: 0.5rem;">0</div>
-                    <div class="stat-card-change">
-                        <small style="color: var(--gray-600); font-weight: 500;" data-translate="owner.stats.totalspaces">إجمالي الأماكن</small>
-                    </div>
-                </div>
-
-                <!-- Occupied Spaces - Blue with car icon -->
-                <div class="stat-card" style="border-left: 4px solid #10b981;">
-                    <div class="stat-card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                        <div style="width: 48px; height: 48px; background: #3b82f6; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                            <i class="fas fa-car" style="color: white; font-size: 1.5rem;"></i>
-                        </div>
-                        <span style="font-size: 0.75rem; font-weight: 600; color: #ef4444; background: #fee2e2; padding: 0.25rem 0.5rem; border-radius: 0.25rem;">
-                            -2%
-                        </span>
-                    </div>
-                    <div class="stat-card-value" id="occupiedSpaces" style="font-size: 2.5rem; font-weight: bold; margin-bottom: 0.5rem;">0</div>
-                    <div class="stat-card-change">
-                        <small style="color: var(--gray-600); font-weight: 500;" data-translate="owner.stats.occupied">مشغول</small>
-                    </div>
-                </div>
-
-                <!-- Occupancy Rate - Blue with chart icon -->
-                <div class="stat-card" style="border-left: 4px solid #f59e0b;">
-                    <div class="stat-card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                        <div style="width: 48px; height: 48px; background: #3b82f6; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                            <i class="fas fa-chart-line" style="color: white; font-size: 1.5rem;"></i>
-                        </div>
-                        <span style="font-size: 0.75rem; font-weight: 600; color: #10b981; background: #d1fae5; padding: 0.25rem 0.5rem; border-radius: 0.25rem;">
-                            +3%
-                        </span>
-                    </div>
-                    <div class="stat-card-value" id="occupancyRate" style="font-size: 2.5rem; font-weight: bold; margin-bottom: 0.5rem;">0%</div>
-                    <div class="stat-card-change">
-                        <small style="color: var(--gray-600); font-weight: 500;" data-translate="owner.stats.occupancyrate">معدل الإشغال</small>
-                    </div>
-                </div>
-
-                <!-- Today's Revenue - Blue with money icon -->
-                <div class="stat-card" style="border-left: 4px solid #8b5cf6;">
-                    <div class="stat-card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                        <div style="width: 48px; height: 48px; background: #3b82f6; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                            <i class="fas fa-money-bill-wave" style="color: white; font-size: 1.5rem;"></i>
-                        </div>
-                        <span style="font-size: 0.75rem; font-weight: 600; color: #10b981; background: #d1fae5; padding: 0.25rem 0.5rem; border-radius: 0.25rem;">
-                            +12%
-                        </span>
-                    </div>
-                    <div class="stat-card-value" id="todayRevenue" style="font-size: 2.5rem; font-weight: bold; margin-bottom: 0.5rem;">0 <span style="font-size: 1rem;">جنيه</span></div>
-                    <div class="stat-card-change">
-                        <small style="color: var(--gray-600); font-weight: 500;" data-translate="owner.stats.revenue">إيرادات اليوم</small>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Parking List Section - Matching new design -->
-            <div class="table-container">
-                <h2 style="margin-bottom: var(--spacing-lg); font-size: 1.25rem; font-weight: bold; color: var(--gray-900);" data-translate="owner.garages.title">مواقفي</h2>
-                <div style="overflow-x: auto;">
-                    <table class="table" style="width: 100%; border-collapse: collapse;">
-                        <thead>
-                            <tr style="border-bottom: 2px solid var(--gray-200);">
-                                <th style="text-align: right; padding: 1rem; font-size: 0.875rem; font-weight: bold; color: var(--gray-800);" data-translate="owner.garages.table.name">اسم الموقف</th>
-                                <th style="text-align: right; padding: 1rem; font-size: 0.875rem; font-weight: bold; color: var(--gray-800);" data-translate="owner.garages.table.location">الموقع</th>
-                                <th style="text-align: right; padding: 1rem; font-size: 0.875rem; font-weight: bold; color: var(--gray-800);" data-translate="owner.garages.table.spaces">الأماكن</th>
-                                <th style="text-align: right; padding: 1rem; font-size: 0.875rem; font-weight: bold; color: var(--gray-800);" data-translate="owner.garages.table.occupied">مشغول</th>
-                                <th style="text-align: right; padding: 1rem; font-size: 0.875rem; font-weight: bold; color: var(--gray-800);" data-translate="owner.garages.table.rate">السعر</th>
-                                <th style="text-align: right; padding: 1rem; font-size: 0.875rem; font-weight: bold; color: var(--gray-800);">الحالة</th>
-                                <th style="text-align: right; padding: 1rem; font-size: 0.875rem; font-weight: bold; color: var(--gray-800);" data-translate="owner.garages.table.actions">الإجراءات</th>
-                            </tr>
-                        </thead>
-                        <tbody id="garagesTableBody">
-                            <!-- Dynamic content -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Bottom Section - Occupancy Trend and Monthly Revenue -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-xl); margin-top: var(--spacing-xl);">
-                <!-- Occupancy Trend -->
-                <div class="table-container">
-                    <h2 style="margin-bottom: var(--spacing-lg); font-size: 1.25rem; font-weight: bold; color: var(--gray-900);">اتجاه الإشغال</h2>
-                    <div style="height: 16rem; display: flex; align-items: center; justify-content: center; background: var(--gray-50); border-radius: var(--radius-lg); border: 2px dashed var(--gray-200);">
-                        <p style="color: var(--gray-400); font-size: 0.875rem;">رسم بياني سيتم إضافته</p>
-                    </div>
-                </div>
-
-                <!-- Monthly Revenue -->
-                <div class="table-container">
-                    <h2 style="margin-bottom: var(--spacing-lg); font-size: 1.25rem; font-weight: bold; color: var(--gray-900);">الإيرادات الشهرية</h2>
-                    <div style="height: 16rem; display: flex; align-items: center; justify-content: center; background: var(--gray-50); border-radius: var(--radius-lg); border: 2px dashed var(--gray-200);">
-                        <p style="color: var(--gray-400); font-size: 0.875rem;">رسم بياني سيتم إضافته</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="table-container" style="margin-top: var(--spacing-xl);">
-                <h2 style="margin-bottom: var(--spacing-lg); display: flex; align-items: center; gap: var(--spacing-md);">
-                    <i class="fas fa-calendar-check" style="color: var(--primary-blue);"></i>
-                    <span data-translate="owner.bookings.title">الحجوزات</span>
-                    <span style="font-size: var(--font-size-sm); color: var(--gray-600); font-weight: normal;">
-                        (حجوزات جراجاتك فقط)
-                    </span>
-                </h2>
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th data-translate="owner.bookings.table.garage">الموقف</th>
-                            <th data-translate="owner.bookings.table.user">المستخدم</th>
-                            <th data-translate="owner.bookings.table.carInfo">معلومات السيارة</th>
-                            <th data-translate="owner.bookings.table.start">وقت البداية</th>
-                            <th data-translate="owner.bookings.table.duration">المدة</th>
-                            <th data-translate="owner.bookings.table.cost">التكلفة</th>
-                            <th data-translate="owner.bookings.table.status">الحالة</th>
-                        </tr>
-                    </thead>
-                    <tbody id="bookingsTableBody">
-                        <!-- Dynamic content -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </main>
-
-    <!-- Add Garage Modal -->
-    <div class="modal-overlay" id="addGarageModal">
-        <div class="modal">
-            <div class="modal-header">
-                <h3 class="modal-title" data-translate="owner.addgarage.title">إضافة موقف جديد</h3>
-                <button class="modal-close" id="closeAddGarageModal">&times;</button>
-            </div>
-            <form id="addGarageForm">
-                <div class="form-group">
-                    <label data-translate="owner.addgarage.name">اسم الموقف</label>
-                    <input type="text" id="garageName" required>
-                </div>
-                <div class="form-group">
-                    <label data-translate="owner.addgarage.address">العنوان</label>
-                    <input type="text" id="garageAddress" required>
-                </div>
-                <div class="form-group">
-                    <label data-translate="owner.addgarage.capacity">إجمالي السعة</label>
-                    <input type="number" id="garageCapacity" min="1" required>
-                </div>
-                <div class="form-group">
-                    <label data-translate="owner.addgarage.rate">السعر بالساعة (جنيه)</label>
-                    <input type="number" id="garageRate" min="0" step="0.5" required>
-                </div>
-                <div class="form-group">
-                    <label data-translate="owner.addgarage.type">نوع الموقف</label>
-                    <select id="garageType" required>
-                        <option value="private" data-translate="owner.addgarage.type.private">خاص</option>
-                        <option value="public" data-translate="owner.addgarage.type.public">عام</option>
-                    </select>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline" id="cancelAddGarageBtn" data-translate="owner.addgarage.cancel">إلغاء</button>
-                    <button type="submit" class="btn btn-primary" data-translate="owner.addgarage.confirm">إضافة الموقف</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div id="notification-container"></div>
-    <script src="js/adminConfig.js"></script>
-    <script src="js/realtime.js"></script>
-    <script src="js/language.js"></script>
-    <script src="js/api.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/owner.js"></script>
-    <script>
-        // Add logout functionality
-        document.getElementById('logoutBtn').addEventListener('click', () => {
-            if (window.logout) {
-                window.logout();
-            }
-        });
-    </script>
-</body>
-</html>
-
-
